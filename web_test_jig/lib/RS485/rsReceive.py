@@ -52,7 +52,7 @@ def read_modbus_values(client, slave_id, register_address, scaling_factor=1.0):
                 )
                 value = round(decoder.decode_32bit_float() * scaling_factor, 3)
                 print(f"Register {register_address}: {value}", flush=True)
-            time.sleep(1)
+            time.sleep(2)
     except KeyboardInterrupt:
         print("\nExiting RS485 Receive Test.", flush=True)
 

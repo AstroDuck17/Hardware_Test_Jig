@@ -125,7 +125,7 @@ def switch_case(value):
                                 print(pin.pin_connections)
                             case 2:
                                oled = SPI_OLED() 
-                               oled.activate_cli(image_path="c.bmp")
+                               oled.activate_cli(image_path="/home/testjig/Downloads/TestJig/test-jig-web/test-jig-web-update/lib/SPI/c.bmp")
                             case 3:
                                 break # this for the Oled 
         case 3:#UART

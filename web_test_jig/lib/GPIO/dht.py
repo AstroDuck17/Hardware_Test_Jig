@@ -13,7 +13,7 @@ class DHTSensor:
         for i in range(attempts):
             try:
                 # Wait longer to allow sensor stabilization before each attempt
-                time.sleep(3)
+                time.sleep(1)
                 temperature = self.dht_device.temperature
                 humidity = self.dht_device.humidity
                 if humidity is not None and temperature is not None:

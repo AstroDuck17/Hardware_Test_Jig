@@ -66,7 +66,7 @@ if __name__ == "__main__":
     sensor = SDS011()
     try:
         while True:
-            print(sensor.activate())
+            print(sensor.activate_cli())
             time.sleep(2)
     except KeyboardInterrupt:
         print("Exiting...")

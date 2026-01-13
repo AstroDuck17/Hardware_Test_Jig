@@ -51,6 +51,17 @@ class ServoMotor:
             self.servo_pwm.stop()
         self.servo_pwm = None
         GPIO.cleanup(self.SERVO_PIN)
+        
+    def check_connection(self):
+        try:
+            self.init_servo()
+            # Set to neutral duty (approx 90°) to test the servo.
+            self.servo_pwm.ChangeDutyCycle(7)
+            time.sleep(0.1)
+            self.cleanup_servo()
+            return True
+        except Exception:
+            return False
 
     def activate_gui(self):
         try:
