@@ -306,3 +306,312 @@ async def stop_rs485():
         RS485_PROCESS.terminate()
         RS485_PROCESS = None
     return {"result": "RS485 test stopped"}
+
+# ==================== CUSTOM COMMUNICATION PAGES ====================
+
+# Custom I2C page
+@router.get("/custom-i2c.html", response_class=HTMLResponse)
+async def custom_i2c_page(request: Request):
+    return templates.TemplateResponse("custom_i2c.html", {"request": request})
+
+# Custom SPI page
+@router.get("/custom-spi.html", response_class=HTMLResponse)
+async def custom_spi_page(request: Request):
+    return templates.TemplateResponse("custom_spi.html", {"request": request})
+
+# Custom UART page
+@router.get("/custom-uart.html", response_class=HTMLResponse)
+async def custom_uart_page(request: Request):
+    return templates.TemplateResponse("custom_uart.html", {"request": request})
+
+# Custom PWM page
+@router.get("/custom-pwm.html", response_class=HTMLResponse)
+async def custom_pwm_page(request: Request):
+    return templates.TemplateResponse("custom_pwm.html", {"request": request})
+
+# Existing devices pages
+@router.get("/devices-i2c.html", response_class=HTMLResponse)
+async def devices_i2c_page(request: Request):
+    return templates.TemplateResponse("devices_i2c.html", {"request": request})
+
+@router.get("/devices-spi.html", response_class=HTMLResponse)
+async def devices_spi_page(request: Request):
+    return templates.TemplateResponse("devices_spi.html", {"request": request})
+
+@router.get("/devices-uart.html", response_class=HTMLResponse)
+async def devices_uart_page(request: Request):
+    return templates.TemplateResponse("devices_uart.html", {"request": request})
+
+@router.get("/devices-pwm.html", response_class=HTMLResponse)
+async def devices_pwm_page(request: Request):
+    return templates.TemplateResponse("devices_pwm.html", {"request": request})
+
+@router.get("/devices-gpio.html", response_class=HTMLResponse)
+async def devices_gpio_page(request: Request):
+    return templates.TemplateResponse("devices_gpio.html", {"request": request})
+
+@router.get("/devices-adc.html", response_class=HTMLResponse)
+async def devices_adc_page(request: Request):
+    return templates.TemplateResponse("devices_adc.html", {"request": request})
+
+# ==================== CUSTOM COMMUNICATION API ENDPOINTS ====================
+
+# Global variables for custom protocol instances
+CUSTOM_I2C_INSTANCE = None
+CUSTOM_SPI_INSTANCE = None
+CUSTOM_UART_INSTANCE = None
+CUSTOM_PWM_INSTANCES = {}  # Dictionary to hold instances for each pin
+
+# Custom I2C operations
+@router.get("/run-custom-i2c", response_class=StreamingResponse)
+async def run_custom_i2c(request: Request, operation: str, bus: int = 1, address: int = 0x00,
+                         register: int = 0x00, data: str = "", length: int = 1):
+    from lib.CUSTOM.custom_i2c import CustomI2C
+    global CUSTOM_I2C_INSTANCE, TEST_STOP_FLAG
+    TEST_STOP_FLAG = False
+    
+    async def event_generator():
+        global CUSTOM_I2C_INSTANCE
+        try:
+            if CUSTOM_I2C_INSTANCE is None or CUSTOM_I2C_INSTANCE.device_address != address:
+                if CUSTOM_I2C_INSTANCE:
+                    CUSTOM_I2C_INSTANCE.close()
+                CUSTOM_I2C_INSTANCE = CustomI2C(bus=bus, device_address=address)
+                yield f"data: I2C initialized - Bus: {bus}, Address: 0x{address:02X}\n\n"
+            
+            if operation == "scan":
+                result = CUSTOM_I2C_INSTANCE.scan_bus()
+                yield f"data: {result['message']}\n\n"
+                if result['success'] and 'devices' in result:
+                    yield f"data: Devices: {', '.join(result['devices'])}\n\n"
+            
+            elif operation == "write_byte":
+                byte_val = int(data, 16) if data.startswith('0x') else int(data)
+                result = CUSTOM_I2C_INSTANCE.write_byte(byte_val)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read_byte":
+                result = CUSTOM_I2C_INSTANCE.read_byte()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "write_byte_data":
+                byte_val = int(data, 16) if data.startswith('0x') else int(data)
+                result = CUSTOM_I2C_INSTANCE.write_byte_data(register, byte_val)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read_byte_data":
+                result = CUSTOM_I2C_INSTANCE.read_byte_data(register)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "write_block":
+                data_bytes = [int(b.strip(), 16) for b in data.split(',')]
+                result = CUSTOM_I2C_INSTANCE.write_block_data(register, data_bytes)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read_block":
+                result = CUSTOM_I2C_INSTANCE.read_block_data(register, length)
+                yield f"data: {result['message']}\n\n"
+            
+            else:
+                yield f"data: Unknown operation: {operation}\n\n"
+        
+        except Exception as e:
+            yield f"data: Error: {e}\n\n"
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# Custom SPI operations
+@router.get("/run-custom-spi", response_class=StreamingResponse)
+async def run_custom_spi(request: Request, operation: str, bus: int = 0, device: int = 0,
+                         mode: int = 0, speed: int = 500000, data: str = "", length: int = 1):
+    from lib.CUSTOM.custom_spi import CustomSPI
+    global CUSTOM_SPI_INSTANCE, TEST_STOP_FLAG
+    TEST_STOP_FLAG = False
+    
+    async def event_generator():
+        global CUSTOM_SPI_INSTANCE
+        try:
+            if CUSTOM_SPI_INSTANCE is None:
+                CUSTOM_SPI_INSTANCE = CustomSPI(bus=bus, device=device, mode=mode, max_speed_hz=speed)
+                yield f"data: SPI initialized - Bus: {bus}, Device: {device}, Mode: {mode}, Speed: {speed}Hz\n\n"
+            
+            if operation == "transfer":
+                data_bytes = [int(b.strip(), 16) for b in data.split(',')]
+                result = CUSTOM_SPI_INSTANCE.transfer(data_bytes)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "write":
+                data_bytes = [int(b.strip(), 16) for b in data.split(',')]
+                result = CUSTOM_SPI_INSTANCE.write(data_bytes)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read":
+                result = CUSTOM_SPI_INSTANCE.read(length)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_mode":
+                result = CUSTOM_SPI_INSTANCE.set_mode(mode)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_speed":
+                result = CUSTOM_SPI_INSTANCE.set_speed(speed)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "get_config":
+                result = CUSTOM_SPI_INSTANCE.get_config()
+                yield f"data: Bus: {result['bus']}, Device: {result['device']}, Mode: {result['mode']}, Speed: {result['max_speed_hz']}Hz\n\n"
+            
+            else:
+                yield f"data: Unknown operation: {operation}\n\n"
+        
+        except Exception as e:
+            yield f"data: Error: {e}\n\n"
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# Custom UART operations
+@router.get("/run-custom-uart", response_class=StreamingResponse)
+async def run_custom_uart(request: Request, operation: str, port: str = "/dev/ttyS0",
+                          baudrate: int = 9600, bytesize: int = 8, parity: str = "N",
+                          stopbits: float = 1, data: str = "", size: int = 1):
+    from lib.CUSTOM.custom_uart import CustomUART
+    global CUSTOM_UART_INSTANCE, TEST_STOP_FLAG
+    TEST_STOP_FLAG = False
+    
+    async def event_generator():
+        global CUSTOM_UART_INSTANCE
+        try:
+            if CUSTOM_UART_INSTANCE is None or CUSTOM_UART_INSTANCE.port_name != port:
+                if CUSTOM_UART_INSTANCE:
+                    CUSTOM_UART_INSTANCE.close()
+                CUSTOM_UART_INSTANCE = CustomUART(port=port, baudrate=baudrate, bytesize=bytesize,
+                                                   parity=parity, stopbits=stopbits)
+                yield f"data: UART initialized - Port: {port}, Baud: {baudrate}, {bytesize}{parity}{stopbits}\n\n"
+            
+            if operation == "write_string":
+                result = CUSTOM_UART_INSTANCE.write(data)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "write_bytes":
+                data_bytes = [int(b.strip(), 16) for b in data.split(',')]
+                result = CUSTOM_UART_INSTANCE.write(data_bytes)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read":
+                result = CUSTOM_UART_INSTANCE.read(size)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read_line":
+                result = CUSTOM_UART_INSTANCE.read_line()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "read_all":
+                result = CUSTOM_UART_INSTANCE.read_all()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "flush":
+                result = CUSTOM_UART_INSTANCE.flush()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "in_waiting":
+                result = CUSTOM_UART_INSTANCE.in_waiting()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_baudrate":
+                result = CUSTOM_UART_INSTANCE.set_baudrate(baudrate)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "get_config":
+                result = CUSTOM_UART_INSTANCE.get_config()
+                yield f"data: Port: {result['port']}, Baud: {result['baudrate']}, Config: {result['bytesize']}{result['parity']}{result['stopbits']}\n\n"
+            
+            else:
+                yield f"data: Unknown operation: {operation}\n\n"
+        
+        except Exception as e:
+            yield f"data: Error: {e}\n\n"
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# Custom PWM operations
+@router.get("/run-custom-pwm", response_class=StreamingResponse)
+async def run_custom_pwm(request: Request, operation: str, pin: int = 18,
+                         frequency: float = 1000, duty_cycle: float = 0,
+                         pulse_width: float = 0):
+    from lib.CUSTOM.custom_pwm import CustomPWM
+    global CUSTOM_PWM_INSTANCES, TEST_STOP_FLAG
+    TEST_STOP_FLAG = False
+    
+    async def event_generator():
+        global CUSTOM_PWM_INSTANCES
+        try:
+            # Check if pin is valid
+            if pin not in CustomPWM.AVAILABLE_PINS:
+                yield f"data: Error: Pin {pin} not available. Use: {list(CustomPWM.AVAILABLE_PINS.keys())}\n\n"
+                return
+            
+            # Create instance for this pin if it doesn't exist
+            if pin not in CUSTOM_PWM_INSTANCES:
+                CUSTOM_PWM_INSTANCES[pin] = CustomPWM(pin=pin, frequency=frequency)
+                yield f"data: PWM initialized on {CustomPWM.AVAILABLE_PINS[pin]}\n\n"
+            
+            pwm_instance = CUSTOM_PWM_INSTANCES[pin]
+            
+            if operation == "start":
+                result = pwm_instance.start(duty_cycle)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "stop":
+                result = pwm_instance.stop()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "change_duty":
+                result = pwm_instance.change_duty_cycle(duty_cycle)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "change_frequency":
+                result = pwm_instance.change_frequency(frequency)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_pulse_width":
+                result = pwm_instance.set_pulse_width(pulse_width)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "get_status":
+                result = pwm_instance.get_status()
+                yield f"data: Pin: {result['pin']}, Freq: {result['frequency']}Hz, Duty: {result['duty_cycle']}%, Running: {result['is_running']}\n\n"
+            
+            else:
+                yield f"data: Unknown operation: {operation}\n\n"
+        
+        except Exception as e:
+            yield f"data: Error: {e}\n\n"
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# Cleanup endpoint for custom protocols
+@router.post("/cleanup-custom")
+async def cleanup_custom(request: Request):
+    global CUSTOM_I2C_INSTANCE, CUSTOM_SPI_INSTANCE, CUSTOM_UART_INSTANCE, CUSTOM_PWM_INSTANCES
+    
+    try:
+        body = await request.json()
+        protocol = body.get('protocol', '').lower()
+        
+        if protocol == "i2c" and CUSTOM_I2C_INSTANCE:
+            CUSTOM_I2C_INSTANCE.close()
+            CUSTOM_I2C_INSTANCE = None
+        elif protocol == "spi" and CUSTOM_SPI_INSTANCE:
+            CUSTOM_SPI_INSTANCE.close()
+            CUSTOM_SPI_INSTANCE = None
+        elif protocol == "uart" and CUSTOM_UART_INSTANCE:
+            CUSTOM_UART_INSTANCE.close()
+            CUSTOM_UART_INSTANCE = None
+        elif protocol == "pwm":
+            for pin, instance in CUSTOM_PWM_INSTANCES.items():
+                instance.cleanup()
+            CUSTOM_PWM_INSTANCES = {}
+        
+        return {"result": f"{protocol.upper()} cleaned up successfully"}
+    except Exception as e:
+        return {"error": str(e)}

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hardware Test Jig</title>
+  <link rel="stylesheet" href="../static/style.css">
+  <style>
+    /* Theme Variables */
+    :root {
+      --bg-primary: #121212;
+      --bg-secondary: #1e1e1e;
+      --bg-tertiary: #2e2e2e;
+      --gradient-start: #8a2be2;
+      --gradient-end: #da70d6;
+      --gradient-hover-start: #6a0dad;
+      --gradient-hover-end: #8a2be2;
+      --border-color: #555;
+      --text-primary: #ffffff;
+      --text-secondary: #EEEEEE;
+      --text-heading: #da70d6;
+      --shadow-color: rgba(0,0,0,0.3);
+      --shadow-light: rgba(138,43,226,0.18);
+      --border-violet: #8A2BE2;
+      --active-border: gold;
+      --nav-bg: rgba(255, 255, 255, 0.1);
+      --nav-text: #ffffff;
+      --nav-border: rgba(255, 255, 255, 0.3);
+    }
+    
+    body.light-theme {
+      --bg-primary: #ffffff;
+      --bg-secondary: #fef9f0;
+      --bg-tertiary: #fff8e7;
+      --gradient-start: #DAA520;
+      --gradient-end: #FDB813;
+      --gradient-hover-start: #B8860B;
+      --gradient-hover-end: #DAA520;
+      --border-color: #daa520;
+      --text-primary: #1a1a1a;
+      --text-secondary: #333333;
+      --text-heading: #B8860B;
+      --shadow-color: rgba(218,165,32,0.3);
+      --shadow-light: rgba(218,165,32,0.18);
+      --border-violet: #daa520;
+      --active-border: #ff8c00;
+      --nav-bg: rgba(255, 255, 255, 0.15);
+      --nav-text: #ffffff;
+      --nav-border: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Fixed viewport layout */
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Dark theme and violet buttons */
+    .container {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      text-align: center;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-size: 1.05rem;
+    }
+    
+    /* Updated main layout styles - Fixed height layout */
+    #main-layout {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      gap: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    
+    /* Left section: device selection */
+    #left-section {
+      flex: 0 0 18%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-shadow: 2px 0 5px var(--shadow-color);
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      overflow-y: auto;
+    }
+    
+    /* Middle section: test output */
+    #middle-section {
+      flex: 1 1 48%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      text-align: center;
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    /* Right section: pin connections */
+    #right-section {
+      flex: 0 0 22%;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      box-shadow: -2px 0 5px var(--shadow-color);
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    
+    /* Device buttons */
+    .device-button {
+      margin: 3px;
+      padding: 10px 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      font-family: 'Helvetica', sans-serif;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    .device-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+    }
+    .device-button.active {
+      background: linear-gradient(135deg, var(--gradient-hover-start), var(--gradient-hover-end));
+      border: 2px solid var(--active-border);
+      transform: scale(1.03);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.5);
+    }
+    
+    /* Pin connections table */
+    .pin-table {
+      margin: 10px auto;
+      border-collapse: collapse;
+      width: 95%;
+      font-size: 0.9rem;
+    }
+    .pin-table th,
+    .pin-table td {
+      border: 1px solid var(--border-color);
+      padding: 7px 9px;
+      text-align: center;
+    }
+    
+    /* Test output */
+    #testOutput {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      font-size: 1rem;
+    }
+    
+    /* Navigation bar styles */
+    .nav-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin: 0;
+      padding-right: 24px;
+    }
+    .nav-btn {
+      padding: 8px 24px;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--nav-border);
+      border-radius: 999px;
+      background: var(--nav-bg);
+      color: var(--nav-text);
+      font-family: 'Segoe UI', 'Helvetica', sans-serif;
+      box-shadow: 0 2px 12px 0 var(--shadow-light), 0 1px 0 var(--nav-border) inset;
+      cursor: pointer;
+      transition: 
+        background 0.25s,
+        color 0.25s,
+        border 0.25s,
+        box-shadow 0.25s,
+        transform 0.18s;
+      backdrop-filter: blur(2.5px);
+      outline: none;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+    .nav-btn:hover, .nav-btn:focus {
+      background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+      color: white;
+      border: 1.5px solid white;
+      box-shadow: 0 4px 16px var(--shadow-light), 0 1px 0 white inset;
+      transform: translateY(-1px) scale(1.03);
+    }
+    
+    .theme-toggle {
+      padding: 8px 24px;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--nav-border);
+      border-radius: 999px;
+      background: var(--nav-bg);
+      color: var(--nav-text);
+      box-shadow: 0 2px 12px 0 rgba(138,43,226,0.10);
+      cursor: pointer;
+      transition: all 0.25s;
+      backdrop-filter: blur(2.5px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .theme-toggle:hover {
+      background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+      color: white;
+      border: 1.5px solid white;
+      transform: translateY(-1px) scale(1.03);
+    }
+    .theme-icon {
+      font-size: 1.1rem;
+    }
+    
+    /* Compact header */
+    header {
+      flex: 0 0 auto;
+      padding: 0.5rem 0;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transition: background 0.3s ease;
+    }
+    
+    .header-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 24px 0 12px;
+      margin-bottom: 0;
+    }
+    .header-logo {
+      height: 40px;
+      width: auto;
+      margin-right: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px var(--shadow-light);
+      background: var(--bg-secondary);
+      object-fit: contain;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .header-logo:hover {
+      transform: scale(1.05);
+    }
+    .header-title {
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-size: 1.5rem;
+      margin: 0;
+      color: white;
+    }
+    .header-title:hover {
+      opacity: 0.85;
+    }
+    
+    /* Compact footer */
+    footer {
+      flex: 0 0 auto;
+      padding: 0.4rem;
+      font-size: 0.85rem;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transition: background 0.3s ease;
+    }
+    
+    /* Output header with action buttons */
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex: 0 0 auto;
+    }
+    .output-header h2 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+    .output-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-button {
+      background: transparent;
+      border: 1px solid var(--border-violet);
+      border-radius: 6px;
+      color: var(--border-violet);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-button:hover {
+      background: var(--border-violet);
+      color: white;
+      transform: scale(1.05);
+    }
+    
+    /* Toggle button styles */
+    .toggle-test-button {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      padding: 10px 28px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      margin: 3px 0;
+      min-width: 140px;
+    }
+    .toggle-test-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+    }
+    .toggle-test-button.running {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    }
+    .toggle-test-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Settings info display */
+    .settings-info {
+      background-color: var(--bg-tertiary);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.8rem;
+      border-left: 4px solid var(--border-violet);
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.3s, max-height 0.3s;
+      flex: 0 0 auto;
+    }
+    .settings-info.visible {
+      opacity: 1;
+      max-height: 200px;
+    }
+    .settings-info h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: var(--border-violet);
+    }
+    .settings-info p {
+      margin: 0.3rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .settings-info strong {
+      color: var(--text-primary);
+    }
+    
+    .test-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex: 0 0 auto;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-flex">
+      <img src="../static/city.png" alt="City" class="header-logo" onclick="location.href='./homepage.html'" />
+      <h1 style="flex:1; text-align:left; margin:0;" class="header-title" onclick="location.href='./homepage.html'">Hardware Test Jig - I2C Protocol</h1>
+      <div class="nav-bar">
+        <button onclick="location.href='./custom-i2c.html'" class="nav-btn">Custom I2C</button>
+        <button onclick="location.href='./homepage.html'" class="nav-btn">Home</button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span class="theme-icon">☀</span>
+          <span id="theme-text">Light</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div id="main-layout">
+      <!-- Left Section: Device Selection -->
+      <div id="left-section">
+        <h2 style="font-size: 1.25rem; margin: 0 0 10px 0;">I2C Devices</h2>
+        <button class="device-button" onclick="selectDevice('BH1750')">BH1750 Light Sensor</button>
+        <button class="device-button" onclick="selectDevice('OLED')">I2C OLED Display</button>
+        <button class="device-button" onclick="selectDevice('MLX90614')">MLX90614 IR Temp</button>
+      </div>
+      
+      <!-- Middle Section: Test Output -->
+      <div id="middle-section">
+        <div class="settings-info" id="settingsInfo">
+          <h3>Current Configuration</h3>
+          <p><strong>Protocol:</strong> <span id="displayProtocol">-</span></p>
+          <p><strong>Device:</strong> <span id="displayDevice">-</span></p>
+        </div>
+        
+        <div class="output-header">
+          <h2>Test Output</h2>
+          <div class="output-actions">
+            <button class="icon-button" onclick="clearOutput()" title="Clear Output">🗑️</button>
+            <button class="icon-button" onclick="downloadLog()" title="Download Log">💾</button>
+          </div>
+        </div>
+        
+        <div id="testOutput">Select a device and click Run Test to begin...</div>
+        
+        <div class="test-buttons">
+          <button id="toggleTestButton" class="toggle-test-button" onclick="toggleTest()">Run Test</button>
+        </div>
+      </div>
+      
+      <!-- Right Section: Pin Connections -->
+      <div id="right-section">
+        <h2 style="font-size: 1.25rem; margin: 0 0 10px 0;">Pin Connections</h2>
+        <div id="pinOutput">Select a device to view pin connections...</div>
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <p>&copy; 2025 Hardware Test Jig</p>
+  </footer>
+  
+  <script>
+    // Theme Management
+    function toggleTheme() {
+      const body = document.body;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      if (body.classList.contains('light-theme')) {
+        body.classList.remove('light-theme');
+        themeText.textContent = 'Light';
+        themeIcon.textContent = '☀';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.add('light-theme');
+        themeText.textContent = 'Dark';
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    
+    // Load saved theme on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme');
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        themeText.textContent = 'Dark';
+        themeIcon.textContent = '🌙';
+      }
+    });
+    
+    let selectedDevice = "";
+    let isTestRunning = false;
+
+    function selectDevice(device) {
+      selectedDevice = device;
+      
+      // Update button states
+      document.querySelectorAll('.device-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update display
+      updateSettingsDisplay('i2c', device);
+      fetchPinConnection();
+    }
+
+    function fetchPinConnection() {
+      if (!selectedDevice) return;
+      
+      let tableHTML = "";
+      const header = ["Pin", "Port"];
+      let rows = [];
+      
+      if (selectedDevice === "BH1750") {
+        rows = [
+          { pin: "VCC", port: "3.3V or 5V" },
+          { pin: "GND", port: "Ground" },
+          { pin: "SCL", port: "GPIO 3 (SCL)" },
+          { pin: "SDA", port: "GPIO 2 (SDA)" }
+        ];
+      } else if (selectedDevice === "OLED") {
+        rows = [
+          { pin: "VCC", port: "3.3V" },
+          { pin: "GND", port: "Ground" },
+          { pin: "SCL", port: "GPIO 3 (SCL)" },
+          { pin: "SDA", port: "GPIO 2 (SDA)" }
+        ];
+      } else if (selectedDevice === "MLX90614") {
+        rows = [
+          { pin: "VCC", port: "3.3V or 5V" },
+          { pin: "GND", port: "Ground" },
+          { pin: "SCL", port: "GPIO 3 (SCL)" },
+          { pin: "SDA", port: "GPIO 2 (SDA)" }
+        ];
+      }
+      
+      tableHTML = generateTable(header, rows);
+      document.getElementById('pinOutput').innerHTML = tableHTML;
+    }
+
+    function generateTable(header, rows) {
+      let tableHTML = `<table class="pin-table">
+        <thead>
+          <tr><th>${header[0]}</th><th>${header[1]}</th></tr>
+        </thead>
+        <tbody>`;
+      rows.forEach(row => {
+        tableHTML += `<tr><td>${row.pin}</td><td>${row.port}</td></tr>`;
+      });
+      tableHTML += `</tbody></table>`;
+      return tableHTML;
+    }
+
+    function toggleTest() {
+      if (isTestRunning) {
+        stopTest();
+      } else {
+        runTest();
+      }
+    }
+
+    function runTest() {
+      if (!selectedDevice) {
+        alert("Please select a device first");
+        return;
+      }
+      
+      updateSettingsDisplay('i2c', selectedDevice);
+      
+      isTestRunning = true;
+      const button = document.getElementById("toggleTestButton");
+      button.textContent = "Stop Test";
+      button.classList.add("running");
+      
+      document.getElementById("testOutput").innerHTML = "";
+      var eventSource = new EventSource(`/run-test/i2c/${encodeURIComponent(selectedDevice)}`);
+      
+      eventSource.onmessage = function(event) {
+        const output = document.getElementById("testOutput");
+        output.innerHTML += event.data + "<br>";
+        output.scrollTop = output.scrollHeight;
+      };
+      
+      eventSource.onerror = function(err) {
+        eventSource.close();
+        isTestRunning = false;
+        button.textContent = "Run Test";
+        button.classList.remove("running");
+        const output = document.getElementById("testOutput");
+        output.innerHTML += "<br><strong>Test completed or stopped</strong><br>";
+      };
+      
+      window.currentEventSource = eventSource;
+    }
+
+    function stopTest() {
+      if (window.currentEventSource) {
+        window.currentEventSource.close();
+        fetch('/stop-test', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            const output = document.getElementById("testOutput");
+            output.innerHTML += "<br><strong>" + data.message + "</strong><br>";
+          });
+      }
+      
+      isTestRunning = false;
+      const button = document.getElementById("toggleTestButton");
+      button.textContent = "Run Test";
+      button.classList.remove("running");
+    }
+    
+    function updateSettingsDisplay(protocol, device) {
+      document.getElementById('displayProtocol').textContent = protocol ? protocol.toUpperCase() : '-';
+      document.getElementById('displayDevice').textContent = device || '-';
+      
+      const settingsInfo = document.getElementById('settingsInfo');
+      settingsInfo.classList.add('visible');
+    }
+
+    function clearOutput() {
+      document.getElementById("testOutput").innerHTML = "";
+    }
+    
+    function downloadLog() {
+      const outputText = document.getElementById("testOutput").innerText;
+      const blob = new Blob([outputText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "i2c_test_log.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

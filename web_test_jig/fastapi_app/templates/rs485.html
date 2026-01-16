@@ -6,6 +6,51 @@
   <title>RS485 Test</title>
   <link rel="stylesheet" href="../static/style.css">
   <style>
+    /* Theme Variables */
+    :root {
+      --bg-primary: #121212;
+      --bg-secondary: #1e1e1e;
+      --bg-tertiary: #2e2e2e;
+      --gradient-start: #8a2be2;
+      --gradient-end: #da70d6;
+      --gradient-hover-start: #6a0dad;
+      --gradient-hover-end: #8a2be2;
+      --border-color: #555;
+      --border-input: #8A2BE2;
+      --text-primary: #ffffff;
+      --text-secondary: #EEEEEE;
+      --text-heading: #da70d6;
+      --shadow-color: rgba(0,0,0,0.3);
+      --active-border: gold;
+      --nav-bg: rgba(40, 30, 60, 0.55);
+      --nav-border: #a084e8;
+      --nav-text: #e7e0fa;
+      --input-bg: #1e1e1e;
+      --input-text: #EEEEEE;
+    }
+    
+    body.light-theme {
+      --bg-primary: #ffffff;
+      --bg-secondary: #fef9f0;
+      --bg-tertiary: #fff8e7;
+      --gradient-start: #DAA520;
+      --gradient-end: #FDB813;
+      --gradient-hover-start: #B8860B;
+      --gradient-hover-end: #DAA520;
+      --border-color: #daa520;
+      --border-input: #DAA520;
+      --text-primary: #1a1a1a;
+      --text-secondary: #333333;
+      --text-heading: #B8860B;
+      --shadow-color: rgba(218,165,32,0.3);
+      --active-border: #ff8c00;
+      --nav-bg: rgba(254, 249, 240, 0.7);
+      --nav-border: #DAA520;
+      --nav-text: #1a1a1a;
+      --input-bg: #ffffff;
+      --input-text: #1a1a1a;
+    }
+    
     /* Fixed viewport layout */
     html {
       font-size: 16px;
@@ -24,23 +69,26 @@
     body {
       display: flex;
       flex-direction: column;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     /* Only minimal overrides/additions here */
     .mode-button.active {
-      background: linear-gradient(135deg, #6a0dad, #8a2be2);
-      border: 3px solid gold;
+      background: linear-gradient(135deg, var(--gradient-hover-start), var(--gradient-hover-end));
+      border: 3px solid var(--active-border);
       transform: scale(1.05);
-      box-shadow: 0 8px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 12px var(--shadow-color);
     }
     #rsOutput {
       flex: 1;
       overflow-y: auto;
-      background: #2e2e2e;
-      color: #EEEEEE;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
       padding: 0.8rem;
       border-radius: 4px;
-      border: 1px solid #555;
+      border: 1px solid var(--border-color);
       font-size: 0.9rem;
       min-height: 0;
     }
@@ -55,9 +103,9 @@
       padding: 0.5rem;
       margin-bottom: 0.3rem;
       border-radius: 4px;
-      border: 1px solid #8A2BE2;
-      background: #1e1e1e;
-      color: #EEEEEE;
+      border: 1px solid var(--border-input);
+      background: var(--input-bg);
+      color: var(--text-secondary);
       font-size: 0.9rem;
     }
     .form-group {
@@ -65,8 +113,8 @@
     }
         /* Dark theme and violet buttons */
     body, .container {
-      background-color: #121212;
-      color: #ffffff;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
       margin: 0;
       text-align: center;
     }
@@ -82,24 +130,24 @@
       margin: 5px;
       padding: 12px 24px;
       cursor: pointer;
-      background: linear-gradient(135deg, #8a2be2, #da70d6);
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       border: none;
       border-radius: 8px;
       color: white;
       font-size: 16px;
       font-family: 'Helvetica', sans-serif;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 6px var(--shadow-color);
       transition: all 0.3s ease;
     }
     .device-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 8px var(--shadow-color);
     }
     .device-button.active {
-      background: linear-gradient(135deg, #6a0dad, #8a2be2);
-      border: 3px solid gold;
+      background: linear-gradient(135deg, var(--gradient-hover-start), var(--gradient-hover-end));
+      border: 3px solid var(--active-border);
       transform: scale(1.05);
-      box-shadow: 0 8px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 12px var(--shadow-color);
     }
     /* New styles for the pin connections table */
     .pin-table {
@@ -110,7 +158,7 @@
     }
     .pin-table th,
     .pin-table td {
-      border: 1px solid #555;
+      border: 1px solid var(--border-color);
       padding: 10px;
       text-align: center;
     }
@@ -123,17 +171,17 @@
       font-size: 18px;
       padding: 12px 24px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 6px var(--shadow-color);
       transition: transform 0.2s, box-shadow 0.2s;
       margin: 5px;
     }
     .run-test-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 8px var(--shadow-color);
     }
     .run-test-button:active {
       transform: translateY(0);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 6px var(--shadow-color);
     }
     /* Updated main layout styles */
     #main-layout {
@@ -155,7 +203,7 @@
       flex-direction: column;
       padding: 12px;
       text-align: center;
-      background-color: #1e1e1e;
+      background-color: var(--bg-secondary);
       border-radius: 8px;
       box-shadow: 2px 0 5px rgba(0,0,0,0.3);
       overflow: hidden;
@@ -169,7 +217,7 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.3);
       box-sizing: border-box;
       overflow-y: auto;
-      background-color: #1e1e1e;
+      background-color: var(--bg-secondary);
       border-radius: 8px;
     }
     
@@ -210,10 +258,10 @@
     .nav-btn {
       padding: 8px 24px;
       font-size: 0.95rem;
-      border: 1.5px solid #a084e8;
+      border: 1.5px solid var(--nav-border);
       border-radius: 999px;
-      background: rgba(40, 30, 60, 0.55);
-      color: #e7e0fa;
+      background: var(--nav-bg);
+      color: var(--nav-text);
       font-family: 'Segoe UI', 'Helvetica', sans-serif;
       box-shadow: 0 2px 16px 0 rgba(138,43,226,0.10), 0 1.5px 0 #8a2be2 inset;
       cursor: pointer;
@@ -229,15 +277,42 @@
       font-weight: 500;
     }
     .nav-btn:hover, .nav-btn:focus {
-      background: linear-gradient(90deg, #8a2be2 0%, #da70d6 100%);
+      background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       color: #fff;
       border: 1.5px solid #fff;
       box-shadow: 0 6px 24px rgba(138,43,226,0.18), 0 2px 0 #fff inset;
       transform: translateY(-2px) scale(1.045);
     }
     /* Compact header */
+    .theme-toggle {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      border: 1.5px solid var(--nav-border);
+      border-radius: 999px;
+      background: var(--nav-bg);
+      color: var(--nav-text);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .theme-toggle:hover {
+      border-color: var(--gradient-end);
+      background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+      color: white;
+      transform: scale(1.05);
+    }
+    .theme-icon {
+      font-size: 1.2rem;
+    }
+    
+
     header {
       padding: 0.4rem 0;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transition: background 0.3s ease;
     }
     
     .header-flex {
@@ -248,6 +323,18 @@
       padding: 0 24px 0 12px;
       margin-bottom: 0;
     }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+
     .header-logo {
       height: 40px;
       width: auto;
@@ -267,6 +354,7 @@
       transition: color 0.2s;
       font-size: 1.8rem;
       margin: 0;
+      color: white;
     }
     .header-title:hover {
       color: #da70d6;
@@ -275,6 +363,9 @@
     /* Compact footer */
     footer {
       padding: 0.4rem 0;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      transition: background 0.3s ease;
     }
     footer p {
       margin: 0;
@@ -286,7 +377,6 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
-      flex-shrink: 0;
     }
     .output-header h2 {
       margin: 0;
@@ -298,9 +388,9 @@
     }
     .icon-button {
       background: transparent;
-      border: 1px solid #8A2BE2;
+      border: 1px solid var(--border-input);
       border-radius: 6px;
-      color: #8A2BE2;
+      color: var(--gradient-start);
       cursor: pointer;
       padding: 6px 10px;
       font-size: 1rem;
@@ -310,7 +400,7 @@
       justify-content: center;
     }
     .icon-button:hover {
-      background: #8A2BE2;
+      background: linear-gradient(90deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       color: white;
       transform: scale(1.05);
     }
@@ -324,7 +414,7 @@
       font-size: 14px;
       padding: 10px 24px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 6px var(--shadow-color);
       transition: all 0.2s;
       margin: 0;
       font-weight: 600;
@@ -332,7 +422,7 @@
     }
     .toggle-test-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 8px var(--shadow-color);
     }
     .toggle-test-button.running {
       background: linear-gradient(135deg, #ff416c, #ff4b2b);
@@ -344,21 +434,21 @@
     
     /* Mode toggle button */
     .mode-toggle-button {
-      background: linear-gradient(135deg, #8a2be2, #da70d6);
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       border: none;
       border-radius: 8px;
       color: white;
       font-size: 14px;
       padding: 10px 24px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 6px var(--shadow-color);
       transition: all 0.3s ease;
       margin: 0;
       flex: 1;
     }
     .mode-toggle-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 8px var(--shadow-color);
     }
     
     /* Button row container */
@@ -371,8 +461,8 @@
     
     /* Settings info display */
     .settings-info {
-      background: #2a2a2a;
-      border: 1px solid #8A2BE2;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-input);
       border-radius: 6px;
       padding: 8px;
       margin-bottom: 8px;
@@ -419,7 +509,7 @@
       width: 80%;
       max-width: 500px;
       box-shadow: 0 10px 40px rgba(138,43,226,0.4);
-      color: #ffffff;
+      color: var(--text-primary);
     }
     .modal-content h2 {
       margin-top: 0;
@@ -431,7 +521,7 @@
       padding: 15px;
       border-radius: 6px;
       margin: 15px 0;
-      border: 1px solid #555;
+      border: 1px solid var(--border-color);
     }
     .modal-settings p {
       margin: 6px 0;
@@ -469,16 +559,16 @@
     .settings-section {
       margin-bottom: 0;
       padding: 10px;
-      background: #2a2a2a;
+      background: var(--bg-tertiary);
       border-radius: 8px;
-      border: 1px solid #8A2BE2;
+      border: 1px solid var(--border-input);
       display: flex;
       flex-direction: column;
     }
     .settings-section h3 {
       margin: 0 0 8px 0;
       font-size: 1rem;
-      color: #da70d6;
+      color: var(--gradient-end);
       border-bottom: 1px solid #555;
       padding-bottom: 6px;
       flex-shrink: 0;
@@ -498,7 +588,11 @@
       <img src="../static/city.png" alt="City" class="header-logo" onclick="location.href='./homepage.html'" />
       <h1 style="flex:1; text-align:left; margin:0;" class="header-title" onclick="location.href='./homepage.html'">Hardware Test Jig</h1>
       <div class="nav-bar">
-        <button onclick="location.href='./testjig.html'" class="nav-btn">TestJig</button>
+        <button onclick="location.href='./homepage.html'" class="nav-btn">Home</button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span class="theme-icon">☀</span>
+          <span id="theme-text">Light</span>
+        </button>
       </div>
     </div>
   </header>
@@ -897,6 +991,38 @@
       a.click();
       URL.revokeObjectURL(url);
     }
+    // Theme Management
+    function toggleTheme() {
+      const body = document.body;
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      if (body.classList.contains('light-theme')) {
+        body.classList.remove('light-theme');
+        themeText.textContent = 'Light';
+        themeIcon.textContent = '☀';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.add('light-theme');
+        themeText.textContent = 'Dark';
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    
+    // Load saved theme on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme');
+      const themeText = document.getElementById('theme-text');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        themeText.textContent = 'Dark';
+        themeIcon.textContent = '🌙';
+      }
+    });
+
   </script>
 </body>
 </html>
