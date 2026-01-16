@@ -3,3 +3,4 @@ _pycache_/
 *.pyo
 venv/
 .env
+*_backup.html
