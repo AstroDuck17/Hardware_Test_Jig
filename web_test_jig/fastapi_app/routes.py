@@ -364,8 +364,8 @@ CUSTOM_PWM_INSTANCES = {}  # Dictionary to hold instances for each pin
 
 # Custom I2C operations
 @router.get("/run-custom-i2c", response_class=StreamingResponse)
-async def run_custom_i2c(request: Request, operation: str, bus: int = 1, address: int = 0x00,
-                         register: int = 0x00, data: str = "", length: int = 1):
+async def run_custom_i2c(request: Request, operation: str, bus: int = 1, address: str = "0x00",
+                         register: str = "0x00", data: str = "", length: int = 1):
     from lib.CUSTOM.custom_i2c import CustomI2C
     global CUSTOM_I2C_INSTANCE, TEST_STOP_FLAG
     TEST_STOP_FLAG = False
@@ -373,11 +373,15 @@ async def run_custom_i2c(request: Request, operation: str, bus: int = 1, address
     async def event_generator():
         global CUSTOM_I2C_INSTANCE
         try:
-            if CUSTOM_I2C_INSTANCE is None or CUSTOM_I2C_INSTANCE.device_address != address:
+            # Convert address from hex string to int
+            addr_int = int(address, 16) if isinstance(address, str) and address.startswith('0x') else int(address)
+            reg_int = int(register, 16) if isinstance(register, str) and register.startswith('0x') else int(register)
+            
+            if CUSTOM_I2C_INSTANCE is None or CUSTOM_I2C_INSTANCE.device_address != addr_int:
                 if CUSTOM_I2C_INSTANCE:
                     CUSTOM_I2C_INSTANCE.close()
-                CUSTOM_I2C_INSTANCE = CustomI2C(bus=bus, device_address=address)
-                yield f"data: I2C initialized - Bus: {bus}, Address: 0x{address:02X}\n\n"
+                CUSTOM_I2C_INSTANCE = CustomI2C(bus=bus, device_address=addr_int)
+                yield f"data: I2C initialized - Bus: {bus}, Address: 0x{addr_int:02X}\n\n"
             
             if operation == "scan":
                 result = CUSTOM_I2C_INSTANCE.scan_bus()
@@ -396,20 +400,20 @@ async def run_custom_i2c(request: Request, operation: str, bus: int = 1, address
             
             elif operation == "write_byte_data":
                 byte_val = int(data, 16) if data.startswith('0x') else int(data)
-                result = CUSTOM_I2C_INSTANCE.write_byte_data(register, byte_val)
+                result = CUSTOM_I2C_INSTANCE.write_byte_data(reg_int, byte_val)
                 yield f"data: {result['message']}\n\n"
             
             elif operation == "read_byte_data":
-                result = CUSTOM_I2C_INSTANCE.read_byte_data(register)
+                result = CUSTOM_I2C_INSTANCE.read_byte_data(reg_int)
                 yield f"data: {result['message']}\n\n"
             
             elif operation == "write_block":
                 data_bytes = [int(b.strip(), 16) for b in data.split(',')]
-                result = CUSTOM_I2C_INSTANCE.write_block_data(register, data_bytes)
+                result = CUSTOM_I2C_INSTANCE.write_block_data(reg_int, data_bytes)
                 yield f"data: {result['message']}\n\n"
             
             elif operation == "read_block":
-                result = CUSTOM_I2C_INSTANCE.read_block_data(register, length)
+                result = CUSTOM_I2C_INSTANCE.read_block_data(reg_int, length)
                 yield f"data: {result['message']}\n\n"
             
             else:
@@ -614,4 +618,4 @@ async def cleanup_custom(request: Request):
         
         return {"result": f"{protocol.upper()} cleaned up successfully"}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e)}    
