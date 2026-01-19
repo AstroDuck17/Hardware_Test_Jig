@@ -26,10 +26,12 @@ class ServoMotor:
     def rotate_180(self):
         try:
             # Rotate 180 degrees clockwise
+            print("Rotating to 0 degrees")
             self.set_angle(0)
             time.sleep(1)
             
             # Rotate 180 degrees counterclockwise
+            print("Rotating to 180 degrees")
             self.set_angle(180)
             time.sleep(1)
                 
@@ -39,8 +41,8 @@ class ServoMotor:
     
     def rotate_to_angle(self, angle):
         try:
+            print(f"Rotating to {angle} degrees")
             self.set_angle(angle)
-            print("kjidfnion")          
             time.sleep(1)  # Wait for the servo to move
         except KeyboardInterrupt:
             print("Interrupted by user")

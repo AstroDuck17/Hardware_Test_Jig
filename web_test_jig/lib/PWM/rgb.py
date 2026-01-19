@@ -72,23 +72,36 @@ class RGBLED:
     def activate_gui(self):
         self.init_rgb()
         try:
+            print("Displaying WHITE")
             self.set_color(255, 255, 255)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying RED")
             self.set_color(255, 0, 0)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying GREEN")
             self.set_color(0, 255, 0)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying BLUE")
             self.set_color(0, 0, 255)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying CYAN")
             self.set_color(0, 255, 255)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying YELLOW")
             self.set_color(255, 255, 0)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
+            
+            print("Displaying MAGENTA")
             self.set_color(255, 0, 255)
-            time.sleep(1)  # Keep the LED on for 5 seconds
+            time.sleep(1)
 
         except Exception as e:
-            print("EROOR")
+            print(f"Error: {e}")
         finally:
             self.turn_off()
             self.cleanup_rgb()

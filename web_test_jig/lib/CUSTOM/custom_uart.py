@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+    #!/usr/bin/env python3
 """
 Custom UART Communication for Test Jig Web Interface
 Enhanced with flow control and advanced operations
