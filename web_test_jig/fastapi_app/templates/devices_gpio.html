@@ -489,23 +489,23 @@
       let rows = [];
             if (selectedDevice === "LED") {
         rows = [
-          { pin: "LED +", port: "GPIO 5" }, { pin: "GND", port: "Ground" }
+          { pin: "LED +", port: "PIN 2 (GPIO PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "Button") {
         rows = [
-          { pin: "Terminal 1", port: "GPIO 6" }, { pin: "Terminal 2", port: "Ground" }
+          { pin: "Terminal 1", port: "PIN 3 (GPIO PORT)" }, { pin: "Terminal 2", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "DHT11") {
         rows = [
-          { pin: "VCC", port: "3.3V or 5V" }, { pin: "DATA", port: "GPIO 13" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "DATA", port: "PIN 4 (GPIO PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "Ultrasonic Sensor") {
         rows = [
-          { pin: "VCC", port: "5V" }, { pin: "Trigger", port: "GPIO 26" }, { pin: "Echo", port: "GPIO 19" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "Trigger", port: "PIN 6 (GPIO PORT)" }, { pin: "Echo", port: "PIN 5 (GPIO PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "DS18B20") {
         rows = [
-          { pin: "VCC", port: "3.3V or 5V" }, { pin: "Signal", port: "GPIO 4 (1-Wire)" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "Signal", port: "PIN 1 (GPIO PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       }
       document.getElementById('pinOutput').innerHTML = generateTable(header, rows);

@@ -489,7 +489,7 @@
       let rows = [];
             if (selectedDevice === "PM Sensor") {
         rows = [
-          { pin: "VCC", port: "5V" }, { pin: "GND", port: "Ground" }, { pin: "TXD", port: "GPIO 15 (RXD)" }, { pin: "RXD", port: "GPIO 14 (TXD)" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "RX", port: "PIN 1 (UART PORT)" }, { pin: "TX", port: "PIN 2 (UART PORT)" }
         ];
       }
       document.getElementById('pinOutput').innerHTML = generateTable(header, rows);

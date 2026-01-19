@@ -492,15 +492,15 @@
       let rows = [];
             if (selectedDevice === "LED-Fading") {
         rows = [
-          { pin: "LED +", port: "GPIO 18 (PWM0)" }, { pin: "GND", port: "Ground" }
+          { pin: "LED +", port: "PIN 1 (PWM PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "RGB LED") {
         rows = [
-          { pin: "Red", port: "GPIO 18" }, { pin: "Green", port: "GPIO 23" }, { pin: "Blue", port: "GPIO 24" }, { pin: "GND", port: "Ground" }
+          { pin: "Red", port: "PIN 1 (PWM PORT)" }, { pin: "Blue", port: "PIN 2 (PWM PORT)" }, { pin: "Green", port: "PIN 3 (PWM PORT)" }, { pin: "GND", port: "Rpi GND" }
         ];
       } else       if (selectedDevice === "Servo Motor") {
         rows = [
-          { pin: "Signal", port: "GPIO 25" }, { pin: "VCC", port: "5V" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "Signal", port: "PIN 4 (PWM PORT)" }
         ];
       }
       document.getElementById('pinOutput').innerHTML = generateTable(header, rows);

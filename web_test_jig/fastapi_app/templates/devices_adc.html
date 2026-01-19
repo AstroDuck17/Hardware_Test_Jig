@@ -487,15 +487,15 @@
       let rows = [];
             if (selectedDevice === "Pot") {
         rows = [
-          { pin: "VCC", port: "3.3V or 5V" }, { pin: "Wiper", port: "ADS1115 A0 (I2C)" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "DATA PIN", port: "PIN 1 (ADC PORT)" }
         ];
       } else       if (selectedDevice === "LDR") {
         rows = [
-          { pin: "VCC", port: "3.3V or 5V" }, { pin: "Signal", port: "ADS1115 A0 (I2C)" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "DATA PIN", port: "PIN 1 (ADC PORT)" }
         ];
       } else       if (selectedDevice === "TDS") {
         rows = [
-          { pin: "VCC", port: "3.3V or 5V" }, { pin: "Signal", port: "ADS1115 A0 (I2C)" }, { pin: "GND", port: "Ground" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "DATA PIN", port: "PIN 1 (ADC PORT)" }
         ];
       }
       document.getElementById('pinOutput').innerHTML = generateTable(header, rows);

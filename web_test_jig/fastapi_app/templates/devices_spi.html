@@ -489,7 +489,7 @@
       let rows = [];
             if (selectedDevice === "OLED") {
         rows = [
-          { pin: "VCC", port: "3.3V" }, { pin: "GND", port: "Ground" }, { pin: "SCK", port: "GPIO 11 (SCLK)" }, { pin: "SDA", port: "GPIO 10 (MOSI)" }, { pin: "RES", port: "GPIO 27 (RST)" }, { pin: "DC", port: "GPIO 22 (D/C)" }, { pin: "CS", port: "GPIO 8 (CE0)" }
+          { pin: "VCC", port: "Rpi VCC" }, { pin: "GND", port: "Rpi GND" }, { pin: "SCK", port: "PIN 3 (SPI PORT)" }, { pin: "SDA", port: "PIN 2 (SPI PORT)" }, { pin: "RES", port: "PIN 6 (SPI PORT)" }, { pin: "DC", port: "PIN 5 (SPI PORT)" }, { pin: "CS", port: "PIN 4 (SPI PORT)" }
         ];
       }
       document.getElementById('pinOutput').innerHTML = generateTable(header, rows);
