@@ -553,20 +553,18 @@
             <div class="settings-section">
               <h3>Operations</h3>
               <div class="operation-buttons">
-                <button class="op-button" onclick="showConfirmModal('write_string')">Write String</button>
-                <button class="op-button" onclick="showConfirmModal('write_bytes')">Write Bytes</button>
-                <button class="op-button" onclick="showConfirmModal('read')">Read</button>
-                <button class="op-button" onclick="showConfirmModal('read_line')">Read Line</button>
-                <button class="op-button" onclick="showConfirmModal('read_all')">Read All</button>
-                <button class="op-button" onclick="showConfirmModal('write_read')">Write & Read</button>
-                <button class="op-button" onclick="showConfirmModal('flush')">Flush</button>
-                <button class="op-button" onclick="showConfirmModal('in_waiting')">Check Input</button>
-                <button class="op-button" onclick="showConfirmModal('out_waiting')">Check Output</button>
-                <button class="op-button" onclick="showConfirmModal('set_dtr')">Set DTR</button>
-                <button class="op-button" onclick="showConfirmModal('set_rts')">Set RTS</button>
-                <button class="op-button" onclick="showConfirmModal('get_control_lines')">Read Control Lines</button>
-                <button class="op-button" onclick="showConfirmModal('send_break')">Send Break</button>
-                <button class="op-button" onclick="showConfirmModal('get_config')">Get Config</button>
+                <button class="op-button" onclick="selectOperation('write_string')">Write String</button>
+                <button class="op-button" onclick="selectOperation('write_bytes')">Write Bytes</button>
+                <button class="op-button" onclick="selectOperation('read')">Read</button>
+                <button class="op-button" onclick="selectOperation('read_line')">Read Line</button>
+                <button class="op-button" onclick="selectOperation('read_all')">Read All</button>
+                <button class="op-button" onclick="selectOperation('write_read')">Write & Read</button>
+                <button class="op-button" onclick="selectOperation('flush')">Flush</button>
+                <button class="op-button" onclick="selectOperation('in_waiting')">Check Input</button>
+                <button class="op-button" onclick="selectOperation('out_waiting')">Check Output</button>
+                <button class="op-button" onclick="selectOperation('get_control_lines')">Read Control Lines</button>
+                <button class="op-button" onclick="selectOperation('send_break')">Send Break</button>
+                <button class="op-button" onclick="selectOperation('get_config')">Get Config</button>
               </div>
             </div>
           </div>
@@ -619,10 +617,13 @@
       event.target.classList.add('active');
     }
     
-    function showConfirmModal(operation) {
-      currentOperation = operation;
+    function showConfirmModal() {
+      if (!currentOperation) {
+        alert('Please select an operation first');
+        return;
+      }
       
-      document.getElementById('modalOperation').textContent = operation.replace(/_/g, ' ').toUpperCase();
+      document.getElementById('modalOperation').textContent = currentOperation.replace(/_/g, ' ').toUpperCase();
       document.getElementById("modalPort").textContent = document.getElementById("port").value;
       document.getElementById("modalBaudrate").textContent = document.getElementById("baudrate").value;
       document.getElementById("modalParity").textContent = document.getElementById("parity").value;
