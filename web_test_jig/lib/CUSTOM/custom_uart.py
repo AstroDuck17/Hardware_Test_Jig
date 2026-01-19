@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Custom UART Communication for Test Jig Web Interface
+Enhanced with flow control and advanced operations
 """
 
 import serial
@@ -9,11 +10,12 @@ from typing import Optional, Union, List
 
 
 class CustomUART:
-    """Custom UART communication class for web interface"""
+    """Custom UART communication class for web interface with full control"""
     
     def __init__(self, port: str = "/dev/ttyS0", baudrate: int = 9600,
                  bytesize: int = 8, parity: str = 'N', stopbits: float = 1,
-                 timeout: Optional[float] = 1.0):
+                 timeout: Optional[float] = 1.0, xonxoff: bool = False,
+                 rtscts: bool = False, dsrdtr: bool = False):
         """
         Initialize UART communication
         
@@ -31,6 +33,12 @@ class CustomUART:
             Number of stop bits (1, 1.5, or 2)
         timeout : float
             Read timeout in seconds
+        xonxoff : bool
+            Enable software flow control
+        rtscts : bool
+            Enable hardware (RTS/CTS) flow control
+        dsrdtr : bool
+            Enable hardware (DSR/DTR) flow control
         """
         self.port_name = port
         
@@ -61,7 +69,10 @@ class CustomUART:
             bytesize=bytesize_map.get(bytesize, serial.EIGHTBITS),
             parity=parity_map.get(parity.upper(), serial.PARITY_NONE),
             stopbits=stopbits_map.get(stopbits, serial.STOPBITS_ONE),
-            timeout=timeout
+            timeout=timeout,
+            xonxoff=xonxoff,
+            rtscts=rtscts,
+            dsrdtr=dsrdtr
         )
     
     def write(self, data: Union[str, List[int]]) -> dict:
@@ -124,6 +135,74 @@ class CustomUART:
         except Exception as e:
             return {"success": False, "message": f"Error: {e}"}
     
+    def out_waiting(self) -> dict:
+        """Get number of bytes in output buffer"""
+        try:
+            count = self.serial.out_waiting
+            return {"success": True, "message": f"Bytes in output buffer: {count}", "count": count}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def write_read(self, data: Union[str, List[int]], read_size: int = 1024, delay: float = 0.1) -> dict:
+        """Write data and read response"""
+        try:
+            write_result = self.write(data)
+            if not write_result["success"]:
+                return write_result
+            time.sleep(delay)
+            read_result = self.read(read_size)
+            return {"success": True, "message": f"Write: {write_result['message']}, Read: {read_result['message']}", "data": read_result.get("data", "")}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def set_timeout(self, timeout: Optional[float]) -> dict:
+        """Change read timeout"""
+        try:
+            self.serial.timeout = timeout
+            return {"success": True, "message": f"Timeout changed to: {timeout}s"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def set_dtr(self, state: bool) -> dict:
+        """Set DTR (Data Terminal Ready) line"""
+        try:
+            self.serial.dtr = state
+            return {"success": True, "message": f"DTR set to: {'HIGH' if state else 'LOW'}"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def set_rts(self, state: bool) -> dict:
+        """Set RTS (Request To Send) line"""
+        try:
+            self.serial.rts = state
+            return {"success": True, "message": f"RTS set to: {'HIGH' if state else 'LOW'}"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def get_control_lines(self) -> dict:
+        """Get state of control lines (CD, CTS, DSR)"""
+        try:
+            cd = self.serial.cd
+            cts = self.serial.cts
+            dsr = self.serial.dsr
+            return {
+                "success": True,
+                "message": f"CD: {'HIGH' if cd else 'LOW'}, CTS: {'HIGH' if cts else 'LOW'}, DSR: {'HIGH' if dsr else 'LOW'}",
+                "cd": cd,
+                "cts": cts,
+                "dsr": dsr
+            }
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
+    def send_break(self, duration: float = 0.25) -> dict:
+        """Send break condition"""
+        try:
+            self.serial.send_break(duration)
+            return {"success": True, "message": f"Break sent for {duration}s"}
+        except Exception as e:
+            return {"success": False, "message": f"Error: {e}"}
+    
     def set_baudrate(self, baudrate: int) -> dict:
         """Change baud rate"""
         try:
@@ -142,6 +221,9 @@ class CustomUART:
             "parity": self.serial.parity,
             "stopbits": self.serial.stopbits,
             "timeout": self.serial.timeout,
+            "xonxoff": self.serial.xonxoff,
+            "rtscts": self.serial.rtscts,
+            "dsrdtr": self.serial.dsrdtr,
             "is_open": self.serial.is_open
         }
     

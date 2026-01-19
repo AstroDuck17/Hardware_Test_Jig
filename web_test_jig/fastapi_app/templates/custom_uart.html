@@ -493,7 +493,30 @@
                 <select id="bytesize" class="form-select">
                 <option value="8" selected>8</option>
                 <option value="7">7</option>
+                <option value="6">6</option>
+                <option value="5">5</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Timeout (seconds)</label>
+                <input type="number" id="timeout" class="form-input" value="1.0" min="0" max="10" step="0.1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Flow Control</label>
+                <div style="margin-top: 5px;">
+                  <label style="display: block; margin-bottom: 3px;">
+                    <input type="checkbox" id="xonxoff" style="margin-right: 5px;">
+                    XON/XOFF (Software)
+                  </label>
+                  <label style="display: block; margin-bottom: 3px;">
+                    <input type="checkbox" id="rtscts" style="margin-right: 5px;">
+                    RTS/CTS (Hardware)
+                  </label>
+                  <label style="display: block;">
+                    <input type="checkbox" id="dsrdtr" style="margin-right: 5px;">
+                    DSR/DTR (Hardware)
+                  </label>
+                </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Data to Write</label>
@@ -502,6 +525,27 @@
               <div class="form-group">
                 <label class="form-label">Read Size (bytes)</label>
                 <input type="number" id="size" class="form-input" value="1" min="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Delay (seconds)</label>
+                <input type="number" id="delay" class="form-input" value="0.1" min="0" max="5" step="0.1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Break Duration (s)</label>
+                <input type="number" id="break_duration" class="form-input" value="0.25" min="0.1" max="2" step="0.05">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Control Lines</label>
+                <div style="margin-top: 5px;">
+                  <label style="display: block; margin-bottom: 3px;">
+                    <input type="checkbox" id="dtr" style="margin-right: 5px;">
+                    DTR (Data Terminal Ready)
+                  </label>
+                  <label style="display: block;">
+                    <input type="checkbox" id="rts" style="margin-right: 5px;">
+                    RTS (Request To Send)
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -514,8 +558,14 @@
                 <button class="op-button" onclick="showConfirmModal('read')">Read</button>
                 <button class="op-button" onclick="showConfirmModal('read_line')">Read Line</button>
                 <button class="op-button" onclick="showConfirmModal('read_all')">Read All</button>
+                <button class="op-button" onclick="showConfirmModal('write_read')">Write & Read</button>
                 <button class="op-button" onclick="showConfirmModal('flush')">Flush</button>
-                <button class="op-button" onclick="showConfirmModal('in_waiting')">Check Buffer</button>
+                <button class="op-button" onclick="showConfirmModal('in_waiting')">Check Input</button>
+                <button class="op-button" onclick="showConfirmModal('out_waiting')">Check Output</button>
+                <button class="op-button" onclick="showConfirmModal('set_dtr')">Set DTR</button>
+                <button class="op-button" onclick="showConfirmModal('set_rts')">Set RTS</button>
+                <button class="op-button" onclick="showConfirmModal('get_control_lines')">Read Control Lines</button>
+                <button class="op-button" onclick="showConfirmModal('send_break')">Send Break</button>
                 <button class="op-button" onclick="showConfirmModal('get_config')">Get Config</button>
               </div>
             </div>
@@ -529,15 +579,21 @@
         <h2>Confirm UART Operation</h2>
         <div class="modal-settings">
           <p><strong>Operation:</strong> <span id="modalOperation"></span></p>
-          <hr style="border-color: #555; margin: 10px 0;">
+          <hr style="border-color: var(--border-color); margin: 10px 0;">
           <p><strong>Configuration:</strong></p>
           <p style="margin-left: 15px;">Serial Port: <span id="modalPort"></span></p>
           <p style="margin-left: 15px;">Baud Rate: <span id="modalBaudrate"></span></p>
           <p style="margin-left: 15px;">Parity: <span id="modalParity"></span></p>
           <p style="margin-left: 15px;">Stop Bits: <span id="modalStopbits"></span></p>
           <p style="margin-left: 15px;">Byte Size: <span id="modalBytesize"></span></p>
+          <p style="margin-left: 15px;">Timeout: <span id="modalTimeout"></span>s</p>
+          <p style="margin-left: 15px;">Flow Control: <span id="modalFlowControl"></span></p>
           <p style="margin-left: 15px;">Data to Write: <span id="modalData"></span></p>
-          <p style="margin-left: 15px;">Read Size (bytes): <span id="modalSize"></span></p>
+          <p style="margin-left: 15px;">Read Size: <span id="modalSize"></span> bytes</p>
+          <p style="margin-left: 15px;">Delay: <span id="modalDelay"></span>s</p>
+          <p style="margin-left: 15px;">DTR: <span id="modalDTR"></span></p>
+          <p style="margin-left: 15px;">RTS: <span id="modalRTS"></span></p>
+          <p style="margin-left: 15px;">Break Duration: <span id="modalBreakDuration"></span>s</p>
         </div>
         <div class="modal-buttons">
           <button class="modal-btn confirm" onclick="confirmAndRun()">Confirm & Run</button>
@@ -563,19 +619,31 @@
       event.target.classList.add('active');
     }
     
-    function showConfirmModal() {
-      if (!currentOperation) {
-        alert('Please select an operation first');
-        return;
-      }
-      document.getElementById('modalOperation').textContent = currentOperation.replace(/_/g, ' ').toUpperCase();
+    function showConfirmModal(operation) {
+      currentOperation = operation;
+      
+      document.getElementById('modalOperation').textContent = operation.replace(/_/g, ' ').toUpperCase();
       document.getElementById("modalPort").textContent = document.getElementById("port").value;
       document.getElementById("modalBaudrate").textContent = document.getElementById("baudrate").value;
       document.getElementById("modalParity").textContent = document.getElementById("parity").value;
       document.getElementById("modalStopbits").textContent = document.getElementById("stopbits").value;
       document.getElementById("modalBytesize").textContent = document.getElementById("bytesize").value;
+      document.getElementById("modalTimeout").textContent = document.getElementById("timeout").value;
+      
+      // Flow Control Display
+      const flowControl = [];
+      if (document.getElementById("xonxoff").checked) flowControl.push("XON/XOFF");
+      if (document.getElementById("rtscts").checked) flowControl.push("RTS/CTS");
+      if (document.getElementById("dsrdtr").checked) flowControl.push("DSR/DTR");
+      document.getElementById("modalFlowControl").textContent = flowControl.length > 0 ? flowControl.join(", ") : "None";
+      
       document.getElementById("modalData").textContent = document.getElementById("data").value;
       document.getElementById("modalSize").textContent = document.getElementById("size").value;
+      document.getElementById("modalDelay").textContent = document.getElementById("delay").value;
+      document.getElementById("modalDTR").textContent = document.getElementById("dtr").checked ? "ON" : "OFF";
+      document.getElementById("modalRTS").textContent = document.getElementById("rts").checked ? "ON" : "OFF";
+      document.getElementById("modalBreakDuration").textContent = document.getElementById("break_duration").value;
+      
       document.getElementById('confirmModal').style.display = 'block';
     }
     
@@ -609,8 +677,16 @@
         parity: document.getElementById("parity").value,
         stopbits: document.getElementById("stopbits").value,
         bytesize: document.getElementById("bytesize").value,
+        timeout: document.getElementById("timeout").value,
+        xonxoff: document.getElementById("xonxoff").checked,
+        rtscts: document.getElementById("rtscts").checked,
+        dsrdtr: document.getElementById("dsrdtr").checked,
         data: document.getElementById("data").value,
         size: document.getElementById("size").value,
+        delay: document.getElementById("delay").value,
+        dtr: document.getElementById("dtr").checked,
+        rts: document.getElementById("rts").checked,
+        break_duration: document.getElementById("break_duration").value,
       });
       
       clearOutput();

@@ -477,7 +477,10 @@ async def run_custom_spi(request: Request, operation: str, bus: int = 0, device:
 @router.get("/run-custom-uart", response_class=StreamingResponse)
 async def run_custom_uart(request: Request, operation: str, port: str = "/dev/ttyS0",
                           baudrate: int = 9600, bytesize: int = 8, parity: str = "N",
-                          stopbits: float = 1, data: str = "", size: int = 1):
+                          stopbits: float = 1, timeout: float = 1.0, xonxoff: bool = False,
+                          rtscts: bool = False, dsrdtr: bool = False,
+                          data: str = "", size: int = 1, delay: float = 0.1,
+                          dtr: bool = False, rts: bool = False, break_duration: float = 0.25):
     from lib.CUSTOM.custom_uart import CustomUART
     global CUSTOM_UART_INSTANCE, TEST_STOP_FLAG
     TEST_STOP_FLAG = False
@@ -489,8 +492,14 @@ async def run_custom_uart(request: Request, operation: str, port: str = "/dev/tt
                 if CUSTOM_UART_INSTANCE:
                     CUSTOM_UART_INSTANCE.close()
                 CUSTOM_UART_INSTANCE = CustomUART(port=port, baudrate=baudrate, bytesize=bytesize,
-                                                   parity=parity, stopbits=stopbits)
-                yield f"data: UART initialized - Port: {port}, Baud: {baudrate}, {bytesize}{parity}{stopbits}\n\n"
+                                                   parity=parity, stopbits=stopbits, timeout=timeout,
+                                                   xonxoff=xonxoff, rtscts=rtscts, dsrdtr=dsrdtr)
+                flow = []
+                if xonxoff: flow.append("XON/XOFF")
+                if rtscts: flow.append("RTS/CTS")
+                if dsrdtr: flow.append("DSR/DTR")
+                flow_str = ", ".join(flow) if flow else "None"
+                yield f"data: UART initialized - Port: {port}, Baud: {baudrate}, {bytesize}{parity}{stopbits}, Timeout: {timeout}s, Flow: {flow_str}\n\n"
             
             if operation == "write_string":
                 result = CUSTOM_UART_INSTANCE.write(data)
@@ -513,6 +522,14 @@ async def run_custom_uart(request: Request, operation: str, port: str = "/dev/tt
                 result = CUSTOM_UART_INSTANCE.read_all()
                 yield f"data: {result['message']}\n\n"
             
+            elif operation == "write_read":
+                if data.startswith('0x') or ',' in data:
+                    data_bytes = [int(b.strip(), 16) for b in data.split(',')]
+                    result = CUSTOM_UART_INSTANCE.write_read(data_bytes, size, delay)
+                else:
+                    result = CUSTOM_UART_INSTANCE.write_read(data, size, delay)
+                yield f"data: {result['message']}\n\n"
+            
             elif operation == "flush":
                 result = CUSTOM_UART_INSTANCE.flush()
                 yield f"data: {result['message']}\n\n"
@@ -521,13 +538,38 @@ async def run_custom_uart(request: Request, operation: str, port: str = "/dev/tt
                 result = CUSTOM_UART_INSTANCE.in_waiting()
                 yield f"data: {result['message']}\n\n"
             
+            elif operation == "out_waiting":
+                result = CUSTOM_UART_INSTANCE.out_waiting()
+                yield f"data: {result['message']}\n\n"
+            
             elif operation == "set_baudrate":
                 result = CUSTOM_UART_INSTANCE.set_baudrate(baudrate)
                 yield f"data: {result['message']}\n\n"
             
+            elif operation == "set_timeout":
+                result = CUSTOM_UART_INSTANCE.set_timeout(timeout)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_dtr":
+                result = CUSTOM_UART_INSTANCE.set_dtr(dtr)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "set_rts":
+                result = CUSTOM_UART_INSTANCE.set_rts(rts)
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "get_control_lines":
+                result = CUSTOM_UART_INSTANCE.get_control_lines()
+                yield f"data: {result['message']}\n\n"
+            
+            elif operation == "send_break":
+                result = CUSTOM_UART_INSTANCE.send_break(break_duration)
+                yield f"data: {result['message']}\n\n"
+            
             elif operation == "get_config":
                 result = CUSTOM_UART_INSTANCE.get_config()
-                yield f"data: Port: {result['port']}, Baud: {result['baudrate']}, Config: {result['bytesize']}{result['parity']}{result['stopbits']}\n\n"
+                yield f"data: Port: {result['port']}, Baud: {result['baudrate']}, Config: {result['bytesize']}{result['parity']}{result['stopbits']}, Timeout: {result['timeout']}s\n\n"
+                yield f"data: Flow Control - XON/XOFF: {result['xonxoff']}, RTS/CTS: {result['rtscts']}, DSR/DTR: {result['dsrdtr']}\n\n"
             
             else:
                 yield f"data: Unknown operation: {operation}\n\n"
