@@ -104,7 +104,7 @@ async def run_test(protocol: str, device: str):
             device_instance = sh1106(serial)
             spi_oled.device = device_instance
             SPIOLED_INSTANCE = spi_oled
-            image = Image.open("/home/testjig/Downloads/TestJig/test-jig-web/test-jig-web-update/lib/SPI/c.bmp").convert("1")
+            image = Image.open("/home/testjig/Downloads/Hardware-Test-Jig/Hardware_Test_Jig/web_test_jig/lib/SPI/c.bmp").convert("1")
             with canvas(device_instance) as draw:
                 draw.bitmap((0, 0), image, fill="white")
             yield "data: Image displayed on SPI OLED.\n\n"
@@ -618,4 +618,4 @@ async def cleanup_custom(request: Request):
         
         return {"result": f"{protocol.upper()} cleaned up successfully"}
     except Exception as e:
-        return {"error": str(e)}    
+        return {"error": str(e)}
