@@ -72,40 +72,41 @@ class RGBLED:
     def activate_gui(self):
         self.init_rgb()
         try:
-            print("Displaying WHITE")
+            yield "Displaying WHITE"
             self.set_color(255, 255, 255)
             time.sleep(1)
             
-            print("Displaying RED")
+            yield "Displaying RED"
             self.set_color(255, 0, 0)
             time.sleep(1)
             
-            print("Displaying GREEN")
+            yield "Displaying GREEN"
             self.set_color(0, 255, 0)
             time.sleep(1)
             
-            print("Displaying BLUE")
+            yield "Displaying BLUE"
             self.set_color(0, 0, 255)
             time.sleep(1)
             
-            print("Displaying CYAN")
+            yield "Displaying CYAN"
             self.set_color(0, 255, 255)
             time.sleep(1)
             
-            print("Displaying YELLOW")
+            yield "Displaying YELLOW"
             self.set_color(255, 255, 0)
             time.sleep(1)
             
-            print("Displaying MAGENTA")
+            yield "Displaying MAGENTA"
             self.set_color(255, 0, 255)
             time.sleep(1)
+            
+            yield "RGB LED test completed."
 
         except Exception as e:
-            print(f"Error: {e}")
+            yield f"Error: {e}"
         finally:
             self.turn_off()
             self.cleanup_rgb()
-        return "RGB LED test completed."
 
 if __name__ == "__main__":
     rgb_led = RGBLED()

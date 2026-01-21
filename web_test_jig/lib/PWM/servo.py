@@ -68,11 +68,21 @@ class ServoMotor:
     def activate_gui(self):
         try:
             self.init_servo()
-            self.rotate_180()
+            yield "Rotating to 0 degrees"
+            self.set_angle(0)
+            time.sleep(1)
+            
+            yield "Rotating to 180 degrees"
+            self.set_angle(180)
+            time.sleep(1)
+            
+            yield "Servo motor test completed."
             self.cleanup_servo()
-            time.sleep(0.5)  # Add a short delay between iterations if needed
+            time.sleep(0.5)
         except KeyboardInterrupt:
-            print("\nMeasurement stopped by User")
+            yield "Measurement stopped by User"
+        except Exception as e:
+            yield f"Error: {e}"
         finally:
             self.cleanup_servo()
 

@@ -164,18 +164,16 @@ async def run_test(protocol: str, device: str):
                 elif device_lower == "servo motor":
                     from lib.PWM.servo import ServoMotor
                     servo = ServoMotor()
-                    servo = ServoMotor()
                     try:
-                        yield "data: Trying Servo Motor rotation...\n\n"   # Inform user before rotation begins
-                        await run_in_threadpool(servo.activate_gui)    # Run the rotation; no return expected
+                        for message in await run_in_threadpool(servo.activate_gui):
+                            yield f"data: {message}\n\n"
                     except Exception as e:
                         yield f"data: No connections present. Error: {e}\n\n"
                 elif device_lower == "rgb led":
                     from lib.PWM.rgb import RGBLED
                     try:
-                        # Call activate_gui() to run a single test cycle and properly clean up
-                        result = await asyncio.wait_for(run_in_threadpool(RGBLED().activate_gui), timeout=15.0)
-                        yield f"data: {result if result is not None else 'No connections present'}\n\n"
+                        for message in await run_in_threadpool(RGBLED().activate_gui):
+                            yield f"data: {message}\n\n"
                     except asyncio.TimeoutError:
                         yield "data: RGB LED test timed out (no connection?)\n\n"
                     except Exception as e:
